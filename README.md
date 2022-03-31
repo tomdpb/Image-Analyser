@@ -20,4 +20,4 @@ Checking for similarity is achieved by generating hashes for each image and usin
 
 ### Note
 
-The `tqdm` requirement can be skipped entirely by changing tqdm's `trange` to pythons's standard `range`. This results in no progress bar, however.
+The `tqdm` requirement can be skipped entirely by changing tqdm's `trange` to python's standard `range`. This results in no progress bar, however.
