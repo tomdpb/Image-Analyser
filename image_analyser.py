@@ -1,10 +1,10 @@
 from PIL import Image, ImageFile
-from tqdm import trange
 from scipy.spatial.distance import hamming
+from tqdm import trange
 import numpy as np
 import imagehash
-import os, sys
-import time
+import os 
+import sys
 
 
 def generate_hashes(files, hash_size):
@@ -18,6 +18,8 @@ def generate_hashes(files, hash_size):
         # ignore non-image files and save index for later
         except Image.UnidentifiedImageError:
             non_img_indices = np.append(non_img_indices, i)
+            continue
+        except IsADirectoryError:
             continue
     return hashes, non_img_indices
 
@@ -56,52 +58,65 @@ def get_smallest_img(img_1, img_2):
         return img_1
 
 
-def main(files, cutoff=0, *, delete=False, hash_size=10):
-    results = []
+def main(search_folder, cutoff=0, *, delete_files=False, hash_size=10):
+    try:
+        files = np.array(os.listdir(os.chdir(search_folder)))
+    except FileNotFoundError:
+        print(f"The folder {search_folder} doesn't exist.")
+        raise
 
     print("Step 1 of 2:")    
     print("Generating hashes.")
     hashes, non_img_indices = generate_hashes(files, hash_size)
+
+    print("\nStep 2 of 2:")
+    # no images were found
+    if hashes.size == 0:
+        print("No images were found in the given folder.")
+        sys.exit()
+    
     # remove non-image files from analysis
     files = np.delete(files, non_img_indices)
 
-    print("\nStep 2 of 2:")
-    if delete:
+    if delete_files:
         print("Analyzing hashes and DELETING similar images.")
     else:
         print("Analyzing hashes.")
 
+    results = []
     for i in trange(files.size):  # use trange for loading bar
         for j in range(i+1, files.size):
             try:
                 if is_similar(hashes[i], hashes[j], cutoff):
                     results.append(f"{files[i]} and {files[j]}")
 
-                    if delete:
+                    if delete_files:
                         os.remove(get_smallest_img(files[i], files[j]))
+            # FileNotFoundError can happen if the file was already deleted
             except (FileNotFoundError, Image.UnidentifiedImageError):
                 continue
     # list is empty
     if not results:
-        results.append(f"No similar images in folder {folder}.")
+        results.append(f"No similar images in folder {search_folder}.")
 
     return results
 
 
 if __name__ == "__main__":
-    start_time = time.time()
     ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-    folder = "."
-    CUTOFF = 0  # lower cutoff = more similar images
-    DELETE = False
+    search_folder = None
+    # a lower difference means images are more similar
+    # 0 -> the images are identical
+    DIFFERENCE = 0 
+    DELETE_FILES = False
 
-    try:
-        files = np.array(os.listdir(os.chdir(folder)))
-    except FileNotFoundError:
-        print(f"The folder {folder} doesn't exist.")
-        raise
-    results = main(files, CUTOFF, delete=DELETE, hash_size=16)
+    if search_folder is None:
+        print("No folder to analyse was given.") 
+        print("Please input a folder to analyse.")
+        search_folder = input("Put a . to analyse the current folder:\n> ")
+
+    results = main(search_folder, DIFFERENCE, delete_files=DELETE_FILES, hash_size=16)
 
     print("\n\nSimilar images:\n", results)
-    print(f"\nTime taken: {(time.time() - start_time):.2f}s")
+    sys.exit()
