@@ -15,7 +15,6 @@ Checking for similarity is achieved by generating hashes for each image and usin
 - PIL: for image analysis
 - scipy: for hamming difference
 - [tqdm](https://github.com/tqdm/tqdm): for loading bars
-- numpy: for storing and quickly processing arrays
 - [imagehash](https://github.com/jgraving/imagehash): for generating the image hashes
 
 ### Note
