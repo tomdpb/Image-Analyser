@@ -2,8 +2,10 @@ from PIL import Image, ImageFile
 from scipy.spatial.distance import hamming
 from tqdm import trange
 import imagehash
-import os 
+import os
 import sys
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 def generate_hashes(files, hash_size):
@@ -27,12 +29,14 @@ def is_similar(hash_1, hash_2, cutoff=0):
     Uses hamming difference to see if the hashes (and therefore images in this
     case) are similar. The similarity is then determined on the given cutoff
     value.
-    
+
     A lower cutoff value means that the hashes are more similar while a higher
     cutoff value will signify that the hashes are more different.
     Example: a hamming difference of 0 means that the hashes are identical.
     A hamming difference of 32 means the hashes are very different.
     """
+    hash_1 = str(hash_1)
+    hash_2 = str(hash_2)
     if hamming(hash_1, hash_2)*len(hash_1) <= cutoff:
         return True
     else:
@@ -42,7 +46,7 @@ def is_similar(hash_1, hash_2, cutoff=0):
 def get_pixel_count(infile):
     with Image.open(infile) as im:
         width, height = im.size
-    
+
     return width*height
 
 
@@ -62,7 +66,7 @@ def main(search_folder, cutoff=0, *, delete_files=False, hash_size=10):
     except FileNotFoundError:
         raise FileNotFoundError(f"The folder {search_folder} doesn't exist.")
 
-    print("Step 1 of 2:")    
+    print("Step 1 of 2:")
     print("Generating hashes.")
     hashes, non_img_indices = generate_hashes(files, hash_size)
 
@@ -71,7 +75,7 @@ def main(search_folder, cutoff=0, *, delete_files=False, hash_size=10):
     if len(hashes) == 0:
         print("No images were found in the given folder.")
         return None
-    
+
     # remove non-image files from analysis
     for i in non_img_indices:
         files.pop(i)
@@ -101,22 +105,21 @@ def main(search_folder, cutoff=0, *, delete_files=False, hash_size=10):
 
 
 if __name__ == "__main__":
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
 
     search_folder = None
     # a lower difference means images are more similar
     # 0 -> the images are identical
-    DIFFERENCE = 0 
+    DIFFERENCE = 0
     DELETE_FILES = False
 
     while search_folder is None:
-        print("No folder to analyze was given.\n") 
+        print("No folder to analyze was given.\n")
         print("Please input a folder to analyze.")
         search_folder = input("Type . to analyze the current folder or q to quit:\n> ")
         if search_folder == "q":
             print("Quitting")
             sys.exit()
-    try:        
+    try:
         results = main(search_folder, DIFFERENCE, delete_files=DELETE_FILES, hash_size=16)
     except FileNotFoundError:
         print(f"{search_folder} does not exist.")
