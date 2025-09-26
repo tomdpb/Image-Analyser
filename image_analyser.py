@@ -1,5 +1,4 @@
 from PIL import Image, ImageFile
-from scipy.spatial.distance import hamming
 from tqdm import trange
 import imagehash
 import os
@@ -39,7 +38,7 @@ def is_similar(
     Example: a hamming difference of 0 means that the hashes are identical.
     A hamming difference of 32 means the hashes are very different.
     """
-    if hamming(hash_1, hash_2) * len(hash_1) <= cutoff:
+    if abs(hash_1 - hash_2) <= cutoff:
         return True
     else:
         return False
