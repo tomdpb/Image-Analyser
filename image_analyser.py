@@ -8,7 +8,9 @@ import sys
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-def generate_hashes(files, hash_size):
+def generate_hashes(
+    files: list, hash_size: int
+) -> tuple[list[imagehash.ImageHash], list[int]]:
     hashes = []
     non_img_indices = []
     for i in trange(len(files)):
@@ -24,7 +26,9 @@ def generate_hashes(files, hash_size):
     return hashes, non_img_indices
 
 
-def is_similar(hash_1, hash_2, cutoff=0):
+def is_similar(
+    hash_1: imagehash.ImageHash, hash_2: imagehash.ImageHash, cutoff: int = 0
+) -> bool:
     """
     Uses hamming difference to see if the hashes (and therefore images in this
     case) are similar. The similarity is then determined on the given cutoff
@@ -41,7 +45,7 @@ def is_similar(hash_1, hash_2, cutoff=0):
         return False
 
 
-def get_pixel_count(infile):
+def get_pixel_count(infile: str) -> int:
     with Image.open(infile) as im:
         width, height = im.size
 
@@ -58,7 +62,13 @@ def get_smallest_img(img_1, img_2):
         return img_1
 
 
-def main(search_folder, cutoff=0, *, delete_files=False, hash_size=10):
+def main(
+    search_folder: str,
+    cutoff: int = 0,
+    *,
+    delete_files: bool = False,
+    hash_size: int = 10,
+) -> list[str] | None:
     results = []
 
     try:
