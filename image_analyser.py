@@ -85,6 +85,10 @@ def main(
         print("No images were found in the given folder.")
         return None
 
+    # ensures that elements from the end of the list are removed first,
+    # so the indices of the remaining elements are not affected
+    non_img_indices.sort(reverse=True)
+
     # remove non-image files from analysis
     for d in non_img_indices:
         files.pop(d)
