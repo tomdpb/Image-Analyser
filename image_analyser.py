@@ -35,9 +35,7 @@ def is_similar(hash_1, hash_2, cutoff=0):
     Example: a hamming difference of 0 means that the hashes are identical.
     A hamming difference of 32 means the hashes are very different.
     """
-    hash_1 = str(hash_1)
-    hash_2 = str(hash_2)
-    if hamming(hash_1, hash_2)*len(hash_1) <= cutoff:
+    if hamming(hash_1, hash_2) * len(hash_1) <= cutoff:
         return True
     else:
         return False
@@ -47,7 +45,7 @@ def get_pixel_count(infile):
     with Image.open(infile) as im:
         width, height = im.size
 
-    return width*height
+    return width * height
 
 
 def get_smallest_img(img_1, img_2):
@@ -61,6 +59,8 @@ def get_smallest_img(img_1, img_2):
 
 
 def main(search_folder, cutoff=0, *, delete_files=False, hash_size=10):
+    results = []
+
     try:
         files = list(os.listdir(os.chdir(search_folder)))
     except FileNotFoundError:
@@ -77,17 +77,16 @@ def main(search_folder, cutoff=0, *, delete_files=False, hash_size=10):
         return None
 
     # remove non-image files from analysis
-    for i in non_img_indices:
-        files.pop(i)
+    for d in non_img_indices:
+        files.pop(d)
 
     if delete_files:
         print("Analyzing hashes and DELETING similar images.")
     else:
         print("Analyzing hashes.")
 
-    results = []
     for i in trange(len(files)):  # use trange for loading bar
-        for j in range(i+1, len(files)):
+        for j in range(i + 1, len(files)):
             try:
                 if is_similar(hashes[i], hashes[j], cutoff):
                     results.append(f"{files[i]} and {files[j]}")
@@ -105,7 +104,6 @@ def main(search_folder, cutoff=0, *, delete_files=False, hash_size=10):
 
 
 if __name__ == "__main__":
-
     search_folder = None
     # a lower difference means images are more similar
     # 0 -> the images are identical
@@ -113,16 +111,18 @@ if __name__ == "__main__":
     DELETE_FILES = False
 
     while search_folder is None:
-        print("No folder to analyze was given.\n")
-        print("Please input a folder to analyze.")
-        search_folder = input("Type . to analyze the current folder or q to quit:\n> ")
+        print("No folder to analyse was given.\n")
+        print("Please input a folder to analyze or q to quit.")
+        search_folder = input("Type . to analyze the current folder:\n> ")
         if search_folder == "q":
             print("Quitting")
             sys.exit()
     try:
-        results = main(search_folder, DIFFERENCE, delete_files=DELETE_FILES, hash_size=16)
+        results = main(
+            search_folder, DIFFERENCE, delete_files=DELETE_FILES, hash_size=16
+        )
     except FileNotFoundError:
-        print(f"{search_folder} does not exist.")
+        print(f"{search_folder} does not exist")
         sys.exit(1)
 
     print("\n\nSimilar images:\n", results)
